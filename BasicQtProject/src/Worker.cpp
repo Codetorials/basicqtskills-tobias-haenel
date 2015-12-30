@@ -2,13 +2,11 @@
 
 #include <iostream>
 
-using namespace basic_qt;
+using namespace basicQt;
 
 Worker::Worker():
     QObject(),
     QRunnable() {
-
-    setObjectName("Basic Worker");
 }
 
 void

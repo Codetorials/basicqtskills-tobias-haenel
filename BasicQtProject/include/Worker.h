@@ -28,7 +28,7 @@
 #include <QObject>
 #include <QRunnable>
 
-namespace basic_qt {
+namespace basicQt {
 
 class Worker :
         public QObject,
@@ -45,5 +45,6 @@ public:
      */
     virtual void run();
 };
+
 }
 #endif // WORKER_H

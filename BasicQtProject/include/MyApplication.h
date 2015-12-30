@@ -1,24 +1,32 @@
 #ifndef MYAPPLICATION_H
 #define MYAPPLICATION_H
 
-#include "Producer.h"
-#include "Consumer.h"
+#include "FunctionValueProducer.h"
+#include "FunctionValueConsumer.h"
 
+#include <QQueue>
 #include <QCoreApplication>
 #include <QVariant>
+#include <QMutex>
 
 namespace basicQt {
 
 class MyApplication :
         public QCoreApplication {
     Q_OBJECT
+
 private:
 
     unsigned m_minProducerCount = 2;
 
     // TODO properly instantiate these, do not forget signal-slot connections
-    Consumer m_consumer;
-    Producer m_producer;
+    FunctionValueConsumer m_consumer;
+    FunctionValueProducer m_producer;
+
+    QQueue<QVariant> m_products;
+    QList<function> m_input;
+    int m_finishedConsumers = 0;
+    QMutex m_productsMutex;
 
     /**
      * @brief parseCommandLineArguments takes the command line arguments and parses them.
@@ -37,6 +45,7 @@ public:
     MyApplication(int argc, char** argv);
     ~MyApplication() = default;
 
+    void addProduct(QVariant product);
     void setup();
 
 signals:
@@ -54,6 +63,8 @@ signals:
 
 public slots:
     void slot_producerFinished();
+    void slot_consumerFinished();
 };
+
 }
 #endif // MYAPPLICATION_H

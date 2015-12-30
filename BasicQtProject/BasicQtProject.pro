@@ -23,11 +23,16 @@ SOURCES += \
     src/main.cpp \
     src/MyApplication.cpp \
     src/Worker.cpp \
-    src/Producer.cpp \
-    src/Consumer.cpp
+    src/FunctionStatWorker.cpp \
+    src/FunctionValueWorker.cpp \
+    src/FunctionValueProducer.cpp \
+    src/FunctionValueConsumer.cpp
 
 HEADERS += \
     include/MyApplication.h \
     include/Worker.h \
-    include/Producer.h \
-    include/Consumer.h
+    include/FunctionStatWorker.h \
+    include/FunctionValueConsumer.h \
+    include/FunctionValueProducer.h \
+    include/FunctionValues.h \
+    include/FunctionValueWorker.h
