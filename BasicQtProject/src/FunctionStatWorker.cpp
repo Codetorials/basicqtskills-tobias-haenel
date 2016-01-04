@@ -1,51 +1,52 @@
 #include "include/FunctionStatWorker.h"
-#include "include/FunctionValueConsumer.h"
 #include "include/MyApplication.h"
-#include "include/FunctionValues.h"
 
-#include <QMutex>
+#include <QDebug>
 #include <QMutexLocker>
 #include <QTextStream>
-#include <QDebug>
 #include <QTime>
-#include <QObject>
+#include <QtGlobal>
+
 
 using namespace basicQt;
 
-FunctionStatWorker::FunctionStatWorker(FunctionValues fp, FunctionValueConsumer *consumer) :
+FunctionStatWorker::FunctionStatWorker(FunctionValues product,
+                                       FunctionSample funcSample,
+                                       FunctionValueConsumer *consumer) :
         Worker(),
         m_consumer {consumer},
-        m_fp {fp} {
-}
+        m_funcValues {product},
+        m_funcSample {funcSample} {}
 
 void
 FunctionStatWorker::run() {
     qDebug() << QTime::currentTime().msecsSinceStartOfDay() << "- running" << this;
-    static QMutex outputMutex;
-    double average = 0;
 
-    for (auto point = m_fp->begin(); point != m_fp->end(); ++point) {
+    double average = 0;
+    for (auto point = m_funcValues->begin(); point != m_funcValues->end(); ++point) {
         average += point->y;
     }
-    average /= (double) m_fp->size();
+    average /= (double) m_funcValues->size();
 
-    //QMutexLocker ml {&outputMutex};
-    if (m_consumer) {
-        MyApplication *app = qobject_cast<MyApplication *>(m_consumer->parent());
-        if (app) {
-            // producer has to be connected first, because the workerCount has to be updated before the application gets the signal
-            QObject::connect(this, &FunctionStatWorker::signal_finished, app, &MyApplication::slot_consumerFinished, Qt::QueuedConnection);
-            emit signal_finished();
-            qDebug() << QTime::currentTime().msecsSinceStartOfDay() << \
-                "- finished" << this << "of" << m_consumer << "with result:" << average;
-            QObject::disconnect(this);
-        } else {
-            qWarning() << "Warning:" << FunctionStatWorker::staticMetaObject.className() << "doesn't have" << \
-                          MyApplication::staticMetaObject.className() << "as grandparent";
-        }
-    } else {
-        qWarning() << "Warning:" << FunctionStatWorker::staticMetaObject.className() << "doesn't have" << \
-                      FunctionValueConsumer::staticMetaObject.className() << "as parent";
-    }
+    // get the app (parent of the consumer that created this worker)
+    Q_ASSERT(m_consumer != nullptr);
+    MyApplication *app = qobject_cast<MyApplication *>(m_consumer->parent());
+    Q_ASSERT(app != nullptr);
+
+    QObject::connect(this, &FunctionStatWorker::signal_finished,
+                     app, &MyApplication::slot_consumerFinished,
+                     Qt::QueuedConnection);
+    emit signal_finished();
+    qDebug() << QTime::currentTime().msecsSinceStartOfDay() << \
+                "- finished" << this << "of" << m_consumer;
+
+    // protect output since concurrent writting to stdout could overlap
+    static QMutex outputMutex;
+    QMutexLocker ml {&outputMutex};
+    QTextStream output {stdout};
+    output << m_funcSample << " - results:" << endl << \
+              "    arithmetic mean: " << average << endl;
+
+    QObject::disconnect(this);
 
 }

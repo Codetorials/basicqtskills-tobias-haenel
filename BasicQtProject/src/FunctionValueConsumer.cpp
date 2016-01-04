@@ -1,20 +1,24 @@
-#include "include/FunctionValueConsumer.h"
-#include "include/FunctionValues.h"
 #include "include/FunctionStatWorker.h"
+#include "include/FunctionValueConsumer.h"
 
-#include <QThreadPool>
 #include <QDebug>
+#include <QtGlobal>
 
 using namespace basicQt;
 
 FunctionValueConsumer::FunctionValueConsumer(QObject *parent) : QObject(parent) {}
 
 void
-FunctionValueConsumer::slot_consume(QVariant product) {
+FunctionValueConsumer::slot_consume(QVariant product, FunctionSample funcSample) {
+    // only support FunctionValues at the moment
+    // QVariant is kind of useless in this case
     if (product.canConvert<FunctionValues>()) {
         FunctionValues funcValues = product.value<FunctionValues>();
-        FunctionStatWorker *funcStatWorker = new FunctionStatWorker(funcValues, this);
-        m_workerPool.start(funcStatWorker);
+        Q_ASSERT(funcValues != nullptr);
+        FunctionStatWorker *funcStatWorker = new FunctionStatWorker(funcValues, funcSample, this);
+        // thread pool will delete the worker automatically
+        m_threadPool.start(funcStatWorker);
+    } else {
+        qDebug() << "Unknown product:" << product;
     }
-
 }

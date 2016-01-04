@@ -11,6 +11,7 @@ QT       -= gui
 TARGET = BasicQtProject
 CONFIG   += c++11
 CONFIG   -= app_bundle
+CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
 
 INCLUDEPATH += \
     $$PWD/include \
@@ -26,7 +27,8 @@ SOURCES += \
     src/FunctionStatWorker.cpp \
     src/FunctionValueWorker.cpp \
     src/FunctionValueProducer.cpp \
-    src/FunctionValueConsumer.cpp
+    src/FunctionValueConsumer.cpp \
+    src/FunctionSample.cpp
 
 HEADERS += \
     include/MyApplication.h \
@@ -34,5 +36,6 @@ HEADERS += \
     include/FunctionStatWorker.h \
     include/FunctionValueConsumer.h \
     include/FunctionValueProducer.h \
-    include/FunctionValues.h \
-    include/FunctionValueWorker.h
+    include/FunctionValueWorker.h \
+    include/FunctionTypes.h \
+    include/FunctionSample.h

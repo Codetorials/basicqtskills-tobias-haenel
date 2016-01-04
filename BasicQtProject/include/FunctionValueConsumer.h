@@ -1,24 +1,12 @@
-/*
- * TODO:
- * More auto-generated code...
- *
- * 1) Fix formatting and namespacing
- * 2) Make sure the application is the consumers parent
- * 3) Listen for signal_dataAvailable
- * 4) If new data is available create a new consumer worker and let it handle the data
- *      Hint: QThreadPool
- *
- * Restictions:
- * Do not have just one worker idling around, waiting for data.
- * Once the workers are done, they shall perish.
- */
-
 #ifndef CONSUMER_H
 #define CONSUMER_H
+
+#include "include/FunctionSample.h"
 
 #include <QObject>
 #include <QThreadPool>
 #include <QVariant>
+
 
 namespace basicQt {
 
@@ -27,13 +15,24 @@ class FunctionValueConsumer :
     Q_OBJECT
 
 private:
-    QThreadPool m_workerPool;
+    /**
+     * @brief m_threadPool manages the workers that consume function values
+     */
+    QThreadPool m_threadPool;
 
 public:
     explicit FunctionValueConsumer(QObject *parent = 0);
 
 public slots:
-    void slot_consume(QVariant product);
+    /**
+     * @brief slot_consume will spawn a worker that consumes a given product
+     * @param product will be consumed
+     * In the current implementation only FunctionValues can be handled
+     * @param funcSample is the FunctionSample that created the product
+     * In the current implementation this is only used for result output
+     * @see FunctionValues
+     */
+    void slot_consume(QVariant product, FunctionSample funcSample);
 };
 
 }
