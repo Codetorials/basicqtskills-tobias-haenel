@@ -83,6 +83,7 @@ void
 MyApplication::setup() {
     // for queued connections
     qRegisterMetaType<FunctionValues>();
+    // fill input for producer
     for (auto f : m_input) {
         m_producer.addFunctionSample(f);
     }
@@ -98,8 +99,11 @@ MyApplication::slot_producerFinished() {
        emit signal_producersRequired();
     }
 
+    // don't use mutex locker here since dataAvaiable will be
+    // called directly and this could result in a dead lock
     m_productsMutex.lock();
         Q_ASSERT(not m_products.isEmpty());
+        // take any product
         FunctionSample funcSample = m_products.begin().key();
         QVariant product = m_products.take(funcSample);
     m_productsMutex.unlock();
@@ -109,6 +113,7 @@ MyApplication::slot_producerFinished() {
 
 void
 MyApplication::slot_consumerFinished() {
+    // exit the program if there is no input left
     if (++m_finishedConsumers >= m_input.size()) {
         exit(0);
     }
